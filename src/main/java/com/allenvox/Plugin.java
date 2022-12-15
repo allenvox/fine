@@ -10,7 +10,7 @@ public class Plugin extends JavaPlugin {
   public void onEnable() {
     logger.info("Fine plugin enabled");
     getServer().getPluginManager().registerEvents(new EventListener(), this);
-    getCommand("hi").setExecutor(new CommandHandler());
+    getCommand("coords").setExecutor(new CommandHandler());
   }
 
   public void onDisable() {
