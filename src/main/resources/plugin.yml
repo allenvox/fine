@@ -1,6 +1,6 @@
 name: Fine
 main: com.allenvox.fine.Plugin
-version: 0.0.1
+version: 1.0.0
 api-version: 1.19.2
 author: allenvox
 description: A fine plugin for Paper
