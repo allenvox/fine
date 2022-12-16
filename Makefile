@@ -1,5 +1,5 @@
 VERSION = 1.0.0
-all: fine-$(VERSION).jar
+all: target/fine-$(VERSION).jar
 
-fine-1.0.0.jar:
+target/fine-$(VERSION).jar:
 	mvn package -f pom.xml
