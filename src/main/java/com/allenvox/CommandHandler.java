@@ -1,5 +1,7 @@
 package com.allenvox;
 
+import java.io.File;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -7,6 +9,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class CommandHandler implements CommandExecutor {
+    private Plugin plugin;
+
+    public CommandHandler(Plugin instance) {
+        plugin = instance;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(command.getName().equalsIgnoreCase("coords") && sender instanceof Player) {
@@ -25,6 +33,8 @@ public class CommandHandler implements CommandExecutor {
                     return false;
                 }
                 String name = args[2];
+                File path = plugin.getDataFolder();
+
                 player.sendMessage(ChatColor.GREEN + "Succesfully saved " + ChatColor.YELLOW + "(" + x + "; " + z + ")" + ChatColor.GREEN + " as " + ChatColor.GOLD + name);
                 return true;
             }
