@@ -74,7 +74,6 @@ public class CommandHandler implements CommandExecutor {
                 return true;
             }
         } else {
-            Plugin.logger.info("Command /"+ command.getName() + " not found");
             return false;
         }
     }
