@@ -1,18 +1,14 @@
 package com.allenvox;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class CommandHandler implements CommandExecutor {
     private Plugin plugin;
@@ -23,58 +19,58 @@ public class CommandHandler implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if(command.getName().equalsIgnoreCase("coords") && sender instanceof Player) {
-            Player player = (Player) sender;
-            if(args.length != 3) {
-                player.sendMessage(ChatColor.GREEN + "Saved coordinates:");
-                File file = new File(plugin.getDataFolder(), "coords.json");
-                try {
-                    JSONParser jsonParser = new JSONParser();
-                    Object parsed = jsonParser.parse(new FileReader(file.getPath()));
-                    JSONObject jsonObject = (JSONObject) parsed;
-                    JSONArray pl = (JSONArray) jsonObject.get(player.getName());
-                    for(Object obj : pl) {
-                        JSONObject place = (JSONObject) obj;
-                        player.sendMessage(ChatColor.GOLD + place.get("name").toString() + ChatColor.GREEN + ":");
-                        player.sendMessage(ChatColor.GREEN + "X: " + place.get("x").toString() + ChatColor.GREEN + ", Z: " + place.get("z").toString());
+        if(command.getName().equalsIgnoreCase("coords")) {
+            if(sender instanceof Player) {
+                Player player = (Player) sender;
+                if(args.length == 1) {
+                    String name = args[0];
+                    int x = player.getLocation().getBlockX();
+                    int z = player.getLocation().getBlockZ();
+                    HashMap<Integer, Integer> XZ = new HashMap<>();
+                    XZ.put(x,z);
+                    HashMap<String, HashMap<Integer, Integer>> c = new HashMap<>();
+                    c.put(name, XZ);
+                    if(!Plugin.coordinates.containsKey(player.getUniqueId())) {
+                        Plugin.coordinates.put(player.getUniqueId(), c);
+                    } else {
+                        player.sendMessage("You have already got coordinates saved with this name.");
                     }
+                    saveCoords();
+                    player.sendMessage("Success! Coordinates have been saved as '" + name + "'.");
+                    return true;
+                } else {
+                    if(Plugin.coordinates.containsKey(player.getUniqueId())) {
+                        for(String name : Plugin.coordinates.get(player.getUniqueId()).keySet()) {
+                            HashMap<Integer, Integer> c = Plugin.coordinates.get(player.getUniqueId()).get(name);
+                            player.sendMessage(name + ": " + c.toString());
+                        }
+                    } else {
+                        player.sendMessage("You have not saved any coordinates yet.");
+                    }
+                    return true;
                 }
-                catch(ParseException | IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
             } else {
-                int x, z;
-                try {
-                    x = Integer.parseInt(args[0]);
-                    z = Integer.parseInt(args[1]);
-                }
-                catch(NumberFormatException e) {
-                    player.sendMessage(ChatColor.RED + "X and Z values must be numeric!");
-                    return false;
-                }
-                String name = args[2];
-                File file = new File(plugin.getDataFolder(), "coords.json");
-                try {
-                    JSONObject place = new JSONObject();
-                    place.put("name", name);
-                    place.put("x", x);
-                    place.put("z", z);
-
-                    JSONParser jsonParser = new JSONParser();
-                    Object parsed = jsonParser.parse(new FileReader(file.getPath()));
-                    JSONObject jsonObject = (JSONObject) parsed;
-                    JSONArray pl = (JSONArray) jsonObject.get(player.getName());
-                    pl.add(place);
-                }
-                catch(ParseException | IOException e) {
-                    e.printStackTrace();
-                }
-                player.sendMessage(ChatColor.GREEN + "Succesfully saved " + ChatColor.YELLOW + "(" + x + "; " + z + ")" + ChatColor.GREEN + " as " + ChatColor.GOLD + name);
+                sender.sendMessage("This command can only be executed by a player.");
                 return true;
             }
         } else {
-            return false;
+            return true;
+        }
+    }
+
+    private void saveCoords() {
+        try {
+            File file = new File(plugin.getDataFolder(), "coords.json");
+            if(!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            FileWriter writer = new FileWriter(file);
+            Plugin.gson.toJson(Plugin.coordinates, writer);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
